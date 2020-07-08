@@ -1,0 +1,53 @@
+pipeline {
+
+  environment {
+    PROJECT = "gke-nonprod-1"
+    APP_NAME = "sample"
+    FE_SVC_NAME = "${APP_NAME}"
+    CLUSTER = "gke-apps"
+    CLUSTER_ZONE = "asia-southeast2-c"
+    IMAGE_TAG = "us.gcr.io/${PROJECT}/${APP_NAME}:latest"
+    JENKINS_CRED = "${PROJECT}"
+  }
+
+  agent {
+    kubernetes {
+      label 'node'
+      defaultContainer 'jnlp'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+labels:
+  component: ci
+spec:
+  # Use service account that can deploy to all namespaces
+  
+  containers:
+  - name: gcloud
+    image: us.gcr.io/gke-nonprod-1/gcloud
+    command:
+    - cat
+    tty: true
+"""
+}
+  }
+    stages {
+        stage('Deploy ') {
+      steps {
+        container('helm3') {
+          sh """
+          helm ls
+          gcloud container clusters get-credentials gke-apps --zone asia-southeast2-c --project gke-nonprod-1
+          kubectl get pods --namespace default
+          helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
+          helm repo update  
+          helm install sampleapp --namespace default
+          helm ls
+          kubectl get pods --namespace default
+          """ 
+        }
+      }
+    }
+  }
+}
