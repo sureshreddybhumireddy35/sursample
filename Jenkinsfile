@@ -1,7 +1,7 @@
 pipeline {
 
   environment {
-    PROJECT = " still-smithy-279711"
+    PROJECT = "my first project"
     APP_NAME = "sample"
     FE_SVC_NAME = "${APP_NAME}"
     CLUSTER = "cluster-1"
@@ -24,8 +24,8 @@ spec:
   # Use service account that can deploy to all namespaces
   
   containers:
-  - name: docker
-    image: getintodevops/jenkins-withdocker:lts
+  - name: nodejs
+    image: node:10.11.0-alpine
     command:
     - cat
     tty: true
@@ -36,6 +36,11 @@ spec:
     tty: true
   - name: helm
     image: us.gcr.io/still-smithy-279711/helm3
+    command:
+    - cat
+    tty: true
+  - name: gcloud
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     command:
     - cat
     tty: true
